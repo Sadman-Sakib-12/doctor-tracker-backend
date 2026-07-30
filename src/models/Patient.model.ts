@@ -1,6 +1,31 @@
-const mongoose = require('mongoose');
+import mongoose, { Document, Schema, Model, Types } from 'mongoose';
 
-const CONDITION_ENUM = [
+export type PatientCondition =
+  | 'stable'
+  | 'critical'
+  | 'recovering'
+  | 'chronic'
+  | 'discharged'
+  | 'under observation';
+
+export type Gender = 'male' | 'female' | 'other';
+
+export interface IPatient extends Document {
+  name: string;
+  age: number;
+  gender: Gender;
+  condition: PatientCondition;
+  phone?: string;
+  email?: string;
+  address?: string;
+  notes?: string;
+  doctor: Types.ObjectId;
+  admittedAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const CONDITIONS: PatientCondition[] = [
   'stable',
   'critical',
   'recovering',
@@ -9,7 +34,7 @@ const CONDITION_ENUM = [
   'under observation',
 ];
 
-const patientSchema = new mongoose.Schema(
+const patientSchema = new Schema<IPatient>(
   {
     name: {
       type: String,
@@ -31,7 +56,7 @@ const patientSchema = new mongoose.Schema(
     condition: {
       type: String,
       required: [true, 'Condition is required'],
-      enum: CONDITION_ENUM,
+      enum: CONDITIONS,
       lowercase: true,
     },
     phone: {
@@ -45,24 +70,18 @@ const patientSchema = new mongoose.Schema(
       trim: true,
       match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email'],
     },
-    address: {
-      type: String,
-      trim: true,
-    },
+    address: { type: String, trim: true },
     notes: {
       type: String,
       trim: true,
       maxlength: [1000, 'Notes cannot exceed 1000 characters'],
     },
     doctor: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'Doctor',
       required: [true, 'Doctor reference is required'],
     },
-    admittedAt: {
-      type: Date,
-      default: Date.now,
-    },
+    admittedAt: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );
@@ -74,4 +93,5 @@ patientSchema.index({ condition: 1 });
 patientSchema.index({ createdAt: -1 });
 patientSchema.index({ admittedAt: -1 });
 
-module.exports = mongoose.model('Patient', patientSchema);
+const Patient: Model<IPatient> = mongoose.model<IPatient>('Patient', patientSchema);
+export default Patient;
