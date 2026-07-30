@@ -1,12 +1,20 @@
-const { body } = require('express-validator');
+import { body, ValidationChain } from 'express-validator';
+import { PatientCondition } from '../models/Patient.model';
 
-const CONDITIONS = ['stable', 'critical', 'recovering', 'chronic', 'discharged', 'under observation'];
+const CONDITIONS: PatientCondition[] = [
+  'stable',
+  'critical',
+  'recovering',
+  'chronic',
+  'discharged',
+  'under observation',
+];
 
-const patientRules = [
+export const patientRules: ValidationChain[] = [
   body('name').trim().notEmpty().withMessage('Patient name is required'),
   body('age')
     .isInt({ min: 0, max: 150 })
-    .withMessage('Age must be a number between 0 and 150'),
+    .withMessage('Age must be between 0 and 150'),
   body('gender')
     .isIn(['male', 'female', 'other'])
     .withMessage('Gender must be male, female, or other'),
@@ -24,5 +32,3 @@ const patientRules = [
     .matches(/^[+\d\s\-()]{7,20}$/)
     .withMessage('Invalid phone number'),
 ];
-
-module.exports = { patientRules };

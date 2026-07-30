@@ -1,6 +1,6 @@
-const { body } = require('express-validator');
+import { body, ValidationChain } from 'express-validator';
 
-const registerRules = [
+export const registerRules: ValidationChain[] = [
   body('name').trim().notEmpty().withMessage('Name is required'),
   body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
   body('password')
@@ -8,9 +8,7 @@ const registerRules = [
     .withMessage('Password must be at least 6 characters'),
 ];
 
-const loginRules = [
+export const loginRules: ValidationChain[] = [
   body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
   body('password').notEmpty().withMessage('Password is required'),
 ];
-
-module.exports = { registerRules, loginRules };
