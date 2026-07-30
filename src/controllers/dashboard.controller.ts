@@ -1,13 +1,18 @@
-const Doctor = require('../models/Doctor.model');
-const Patient = require('../models/Patient.model');
+import { Response, NextFunction } from 'express';
+import Doctor from '../models/Doctor.model';
+import Patient from '../models/Patient.model';
+import { AuthRequest } from '../types';
 
-/**
- * @route  GET /api/dashboard/stats
- * @desc   Aggregate stats: totals, patients per doctor, conditions, monthly trend
- * @access Private
- */
-const getStats = async (_req, res, next) => {
+// GET /api/dashboard/stats
+export const getStats = async (
+  _req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
     const [
       totalDoctors,
       totalPatients,
@@ -22,12 +27,7 @@ const getStats = async (_req, res, next) => {
 
       // Top 10 doctors by patient count
       Patient.aggregate([
-        {
-          $group: {
-            _id: '$doctor',
-            patientCount: { $sum: 1 },
-          },
-        },
+        { $group: { _id: '$doctor', patientCount: { $sum: 1 } } },
         { $sort: { patientCount: -1 } },
         { $limit: 10 },
         {
@@ -66,31 +66,15 @@ const getStats = async (_req, res, next) => {
 
       // Monthly new patients (last 12 months)
       Patient.aggregate([
-        {
-          $match: {
-            createdAt: {
-              $gte: new Date(new Date().setFullYear(new Date().getFullYear() - 1)),
-            },
-          },
-        },
+        { $match: { createdAt: { $gte: oneYearAgo } } },
         {
           $group: {
-            _id: {
-              year: { $year: '$createdAt' },
-              month: { $month: '$createdAt' },
-            },
+            _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },
             count: { $sum: 1 },
           },
         },
         { $sort: { '_id.year': 1, '_id.month': 1 } },
-        {
-          $project: {
-            _id: 0,
-            year: '$_id.year',
-            month: '$_id.month',
-            count: 1,
-          },
-        },
+        { $project: { _id: 0, year: '$_id.year', month: '$_id.month', count: 1 } },
       ]),
 
       // Top specializations
@@ -117,5 +101,3 @@ const getStats = async (_req, res, next) => {
     next(error);
   }
 };
-
-module.exports = { getStats };
