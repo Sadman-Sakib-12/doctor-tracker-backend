@@ -1,28 +1,40 @@
-/**
- * Global Express error handler.
- * Normalises Mongoose errors, JWT errors, and generic errors
- * into a consistent JSON response shape.
- */
-const errorHandler = (err, _req, res, _next) => {
+import { Request, Response, NextFunction } from 'express';
+
+interface AppError extends Error {
+  statusCode?: number;
+  code?: number;
+  keyValue?: Record<string, string>;
+  errors?: Record<string, { message: string }>;
+  path?: string;
+  value?: string;
+  stack?: string;
+}
+
+const errorHandler = (
+  err: AppError,
+  _req: Request,
+  res: Response,
+  _next: NextFunction
+): void => {
   let statusCode = err.statusCode || 500;
   let message = err.message || 'Internal Server Error';
 
-  // Mongoose: duplicate key
-  if (err.code === 11000) {
+  // Mongoose duplicate key
+  if (err.code === 11000 && err.keyValue) {
     const field = Object.keys(err.keyValue)[0];
     message = `${field.charAt(0).toUpperCase() + field.slice(1)} already exists`;
     statusCode = 409;
   }
 
-  // Mongoose: validation error
-  if (err.name === 'ValidationError') {
+  // Mongoose validation error
+  if (err.name === 'ValidationError' && err.errors) {
     message = Object.values(err.errors)
       .map((e) => e.message)
       .join(', ');
     statusCode = 422;
   }
 
-  // Mongoose: cast error (invalid ObjectId)
+  // Mongoose cast error (invalid ObjectId)
   if (err.name === 'CastError') {
     message = `Invalid ${err.path}: ${err.value}`;
     statusCode = 400;
@@ -45,4 +57,4 @@ const errorHandler = (err, _req, res, _next) => {
   });
 };
 
-module.exports = errorHandler;
+export default errorHandler;
