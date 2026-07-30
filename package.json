@@ -1,12 +1,13 @@
 {
   "name": "doctor-tracker-backend",
   "version": "1.0.0",
-  "description": "Doctor Tracker REST API - Express + MongoDB",
-  "main": "src/server.js",
+  "description": "Doctor Tracker REST API – Express + MongoDB + TypeScript",
+  "main": "dist/server.js",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
-    "lint": "eslint src/**/*.js"
+    "start": "node dist/server.js",
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "build": "tsc",
+    "lint": "eslint src/**/*.ts"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -22,7 +23,15 @@
     "morgan": "^1.10.0"
   },
   "devDependencies": {
-    "nodemon": "^3.0.2"
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^4.17.25",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/morgan": "^1.9.10",
+    "@types/node": "^20.11.5",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.9.3"
   },
   "engines": {
     "node": ">=18.0.0"
