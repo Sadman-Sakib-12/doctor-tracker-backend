@@ -18,9 +18,23 @@ const app = express();
 app.use(helmet());
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
+// Support multiple allowed origins (comma-separated in CLIENT_URL env var)
+const rawOrigins = process.env.CLIENT_URL || 'http://localhost:3000';
+const allowedOrigins = rawOrigins
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    origin: (origin, callback) => {
+      // Allow requests with no origin (Postman, curl, server-side)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      // In development allow all
+      if (process.env.NODE_ENV !== 'production') return callback(null, true);
+      callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
     credentials: true,
   })
 );
@@ -29,7 +43,7 @@ app.use(
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: process.env.NODE_ENV === 'production' ? 200 : 2000,
+    max: process.env.NODE_ENV === 'production' ? 500 : 2000,
     standardHeaders: true,
     legacyHeaders: false,
   })
