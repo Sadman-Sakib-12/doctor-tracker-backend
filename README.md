@@ -79,7 +79,7 @@ Instead of scanning all documents on every search, we register `{ name: 'text', 
 ## Visual Evidence
 
 ### Dashboard
-![Doctor Tracker Dashboard](https://i.ibb.co/rRrYBhHJ/screenshot.png)
+<img src="https://i.ibb.co/rRrYBhHJ/screenshot.png" alt="Doctor Tracker Dashboard" width="100%" />
 
 | Method | Endpoint | Description |
 |---|---|---|
